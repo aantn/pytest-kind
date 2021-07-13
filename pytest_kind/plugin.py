@@ -9,6 +9,8 @@ from .cluster import KindCluster
 def kind_cluster(request):
     """Provide a Kubernetes kind cluster as test fixture."""
     name = request.config.getoption("cluster_name")
+    kind_version = request.config.getoption("kind_version")
+    kubectl_version = request.config.getoption("kubectl_version")
     keep = request.config.getoption("keep_cluster")
     kubeconfig = request.config.getoption("kubeconfig")
     image = request.config.getoption("kind_image")
@@ -16,6 +18,8 @@ def kind_cluster(request):
     kubectl_path = request.config.getoption("kind_kubectl_bin")
     cluster = KindCluster(
         name,
+        kind_version,
+        kubectl_version,
         Path(kubeconfig) if kubeconfig else None,
         image=image,
         kind_path=Path(kind_path) if kind_path else None,
@@ -55,6 +59,26 @@ def pytest_addoption(parser):
         help=(
             "If provided, use the specified docker image "
             "instead of the default one. (e.g. kindest/node:v1.20.2)"
+        ),
+    )
+    group.addoption(
+        "--kind-version",
+        default="v0.10.0",
+        action="store",
+        type=str,
+        help=(
+            "If provided, download the specified kind version "
+            "instead of the default one. (e.g. v0.10.0)"
+        ),
+    )
+    group.addoption(
+        "--kubectl-version",
+        default="v1.20.2",
+        action="store",
+        type=str,
+        help=(
+            "If provided, download the specified kubectl version "
+            "instead of the default one. (e.g. v1.20.2)"
         ),
     )
     group.addoption(

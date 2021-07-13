@@ -15,34 +15,36 @@ import pykube
 import requests
 
 
-KIND_VERSION = "v0.10.0"
-KUBECTL_VERSION = "v1.20.2"
-
-
 class KindCluster:
     def __init__(
         self,
         name: str,
+        kind_version: str,
+        kubectl_version: str,
         kubeconfig: Optional[Path] = None,
         image: Optional[str] = None,
         kind_path: Optional[Path] = None,
         kubectl_path: Optional[Path] = None,
     ):
         self.name = name
+        self.kind_version = kind_version
+        self.kubectl_version = kubectl_version
         self.image = image
         path = Path(".pytest-kind")
         self.path = path / name
         self.path.mkdir(parents=True, exist_ok=True)
         self.kubeconfig_path = kubeconfig or (self.path / "kubeconfig")
-        self.kind_path = kind_path or (self.path / "kind")
-        self.kubectl_path = kubectl_path or (self.path / "kubectl")
+        self.kind_path = kind_path or (self.path / f"kind-{self.kind_version}")
+        self.kubectl_path = kubectl_path or (self.path / f"kubectl-{self.kubectl_version}")
 
     def ensure_kind(self):
         if not self.kind_path.exists():
-            osname = sys.platform  # "linux" or "darwin"
+            osname = sys.platform
+            if osname == "win32":
+                osname = "windows"
             url = os.getenv(
                 "KIND_DOWNLOAD_URL",
-                f"https://github.com/kubernetes-sigs/kind/releases/download/{KIND_VERSION}/kind-{osname}-amd64",
+                f"https://github.com/kubernetes-sigs/kind/releases/download/{self.kind_version}/kind-{osname}-amd64",
             )
             logging.info(f"Downloading {url}..")
             tmp_file = self.kind_path.with_suffix(".tmp")
@@ -60,7 +62,7 @@ class KindCluster:
             osname = sys.platform  # "linux" or "darwin"
             url = os.getenv(
                 "KUBECTL_DOWNLOAD_URL",
-                f"https://storage.googleapis.com/kubernetes-release/release/{KUBECTL_VERSION}/bin/{osname}/amd64/kubectl",
+                f"https://storage.googleapis.com/kubernetes-release/release/{self.kubectl_version}/bin/{osname}/amd64/kubectl",
             )
             logging.info(f"Downloading {url}..")
             tmp_file = self.kubectl_path.with_suffix(".tmp")
