@@ -34,7 +34,12 @@ class KindCluster:
         self.path = path / name
         self.path.mkdir(parents=True, exist_ok=True)
         self.kubeconfig_path = kubeconfig or (self.path / "kubeconfig")
-        self.kind_path = kind_path or (self.path / f"kind-{self.kind_version}")
+        if kind_path:
+            self.kind_path = kind_path
+        elif sys.platform == "win32":
+            self.kind_path = self.path / f"kind-{self.kind_version}.exe"
+        else:
+            self.kind_path = self.path / f"kind-{self.kind_version}"
         self.kubectl_path = kubectl_path or (self.path / f"kubectl-{self.kubectl_version}")
 
     def ensure_kind(self):
