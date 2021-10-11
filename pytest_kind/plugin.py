@@ -6,7 +6,7 @@ from .cluster import KindCluster
 
 
 @pytest.fixture(scope="session")
-def kind_cluster(request):
+def kind_cluster(request, tmp_path_factory):
     """Provide a Kubernetes kind cluster as test fixture."""
     name = request.config.getoption("cluster_name")
     kind_version = request.config.getoption("kind_version")
@@ -24,6 +24,7 @@ def kind_cluster(request):
         image=image,
         kind_path=Path(kind_path) if kind_path else None,
         kubectl_path=Path(kubectl_path) if kubectl_path else None,
+        base_path=tmp_path_factory.mktemp(".pytest-kind"),
     )
     cluster.create()
     yield cluster

@@ -25,13 +25,15 @@ class KindCluster:
         image: Optional[str] = None,
         kind_path: Optional[Path] = None,
         kubectl_path: Optional[Path] = None,
+        base_path: Optional[Path] = None
     ):
         self.name = name
         self.kind_version = kind_version
         self.kubectl_version = kubectl_version
         self.image = image
-        path = Path(".pytest-kind")
-        self.path = path / name
+        if base_path is None:
+            base_path = Path(".pytest-kind")
+        self.path = base_path / name
         self.path.mkdir(parents=True, exist_ok=True)
         self.kubeconfig_path = kubeconfig or (self.path / "kubeconfig")
         if kind_path:
